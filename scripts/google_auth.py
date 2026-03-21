@@ -70,6 +70,7 @@ def main() -> None:
     print("Opening browser for Google OAuth consent...")
     webbrowser.open(auth_url)
 
+    HTTPServer.allow_reuse_address = True
     server = HTTPServer(("localhost", 8085), Handler)
     print("Waiting for authorization callback on http://localhost:8085 ...")
     server.handle_request()

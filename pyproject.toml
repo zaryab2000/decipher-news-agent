@@ -8,6 +8,7 @@ dependencies = [
     "google-auth-oauthlib==1.2.1",
     "requests==2.32.3",
     "pyyaml==6.0.2",
+    "gnews==0.4.3",
 ]
 
 [build-system]

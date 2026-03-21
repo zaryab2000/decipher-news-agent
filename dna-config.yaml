@@ -1,18 +1,16 @@
 timezone: "Asia/Dubai"  # GMT+4
 
 gmail:
-  label: "DNA/Newsletters"
+  label: "dna-queue"
   lookback_hours: 24
 
 youtube:
-  playlist_id: "[PENDING]"
+  playlist_id: "PLsUtsbCOwLIP00R90YxcBnCDOqFLrhasg"
   max_videos: 3
   state_file: "dna-state.json"
 
 news:
-  primary_api: "newsapi"
-  api_key_env: "NEWS_API_KEY"
-  fallback_api_key_env: "GNEWS_API_KEY"
+  source: "google_news_rss"  # Free, no API key needed
   keywords:
     - "crypto prices"
     - "ethereum"
@@ -23,7 +21,7 @@ news:
   max_total_articles: 15
 
 notion:
-  parent_page_id: "[PENDING]"
+  parent_page_id: "32aa13cdb21f80c7a5a3fc337a1f1c76"
   sub_page_title_format: "DD/MM/YY: News for the Day"
   icon: "📰"
 
