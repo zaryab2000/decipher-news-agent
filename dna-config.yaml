@@ -1,0 +1,35 @@
+timezone: "Asia/Dubai"  # GMT+4
+
+gmail:
+  label: "DNA/Newsletters"
+  lookback_hours: 24
+
+youtube:
+  playlist_id: "[PENDING]"
+  max_videos: 3
+  state_file: "dna-state.json"
+
+news:
+  primary_api: "newsapi"
+  api_key_env: "NEWS_API_KEY"
+  fallback_api_key_env: "GNEWS_API_KEY"
+  keywords:
+    - "crypto prices"
+    - "ethereum"
+    - "indian stock market"
+    - "blockchain"
+    - "artificial intelligence"
+  articles_per_keyword: 3
+  max_total_articles: 15
+
+notion:
+  parent_page_id: "[PENDING]"
+  sub_page_title_format: "DD/MM/YY: News for the Day"
+  icon: "📰"
+
+categories:
+  - Finance
+  - Web3 News
+  - AI News
+  - Modern Philosophy
+  - Other
