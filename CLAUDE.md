@@ -14,6 +14,9 @@ Personal AI agent that generates a daily newspaper by aggregating email newslett
 | File | Purpose |
 |------|---------|
 | `.claude/commands/report-news.md` | Slash command prompt (the brain) |
+| `.claude/commands/add-news-topic.md` | Add news keywords to config |
+| `.claude/commands/remove-news-topic.md` | Remove news keywords from config |
+| `.claude/commands/list-topics.md` | Show current news keywords |
 | `scripts/fetch_news.py` | NewsAPI/GNews fetcher |
 | `scripts/fetch_gmail.py` | Gmail newsletter fetcher |
 | `scripts/fetch_youtube.py` | YouTube playlist fetcher |

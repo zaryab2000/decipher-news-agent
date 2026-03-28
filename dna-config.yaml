@@ -12,7 +12,6 @@ youtube:
 news:
   source: "google_news_rss"  # Free, no API key needed
   keywords:
-    - "crypto prices"
     - "ethereum"
     - "indian stock market"
     - "blockchain"
