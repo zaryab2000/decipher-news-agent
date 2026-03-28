@@ -14,6 +14,7 @@ Personal AI agent that generates a daily newspaper by aggregating email newslett
 | File | Purpose |
 |------|---------|
 | `.claude/commands/report-news.md` | Slash command prompt (the brain) |
+| `.claude/commands/summarize.md` | Summarize YouTube video to Notion |
 | `.claude/commands/add-news-topic.md` | Add news keywords to config |
 | `.claude/commands/remove-news-topic.md` | Remove news keywords from config |
 | `.claude/commands/list-topics.md` | Show current news keywords |

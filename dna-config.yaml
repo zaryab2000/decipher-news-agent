@@ -6,6 +6,7 @@ gmail:
 
 youtube:
   playlist_id: "PLsUtsbCOwLIP00R90YxcBnCDOqFLrhasg"
+  dna_summary_playlist_id: "PLsUtsbCOwLIPCZ_8xPIlwveIxGaoXOJ1e"
   max_videos: 3
   state_file: "dna-state.json"
 
@@ -21,6 +22,7 @@ news:
 
 notion:
   parent_page_id: "32aa13cdb21f80c7a5a3fc337a1f1c76"
+  youtube_summaries_page_id: "331a13cdb21f8021a052c1e4dadd9ec3"
   sub_page_title_format: "DD/MM/YY: News for the Day"
   icon: "📰"
 
