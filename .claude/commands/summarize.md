@@ -189,7 +189,7 @@ Replace `YOUTUBE_URL` with the user's input URL.
 Using the video URL from Step 2, run the `summarize` CLI:
 
 ```bash
-summarize "VIDEO_URL" --length long --youtube auto
+summarize "VIDEO_URL" --length long --youtube auto --model google/gemini-2.5-flash
 ```
 
 Replace `VIDEO_URL` with the actual YouTube URL.
@@ -205,7 +205,7 @@ Capture the full stdout output — this is the markdown summary.
   and stop.
 - If `summarize` exits with a non-zero code, print the stderr output. Then retry once with an explicit model fallback:
   ```bash
-  summarize "VIDEO_URL" --length long --youtube auto --model google/gemini-2.0-flash
+  summarize "VIDEO_URL" --length long --youtube auto --model openrouter/google/gemini-2.0-flash-exp:free
   ```
   If the retry also fails, stop. Do NOT create a Notion page for a failed summarization.
 
