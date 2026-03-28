@@ -82,73 +82,101 @@ Then read the subtitle file from `/tmp/dna-VIDEO_ID.en.vtt` (or `.en.srt`). Summ
 
 ## Step 4: Compose Newspaper
 
-Build the newspaper content in Notion-flavored Markdown following this exact structure:
+Build the newspaper content in Notion-flavored Markdown. Use the Notion-enhanced markdown spec (callouts, colored blocks, toggles, columns, table of contents) for visual richness. Follow this exact structure:
 
 ```markdown
-# Daily News Updates
-
-## [Keyword 1]
-- **[Headline]** - *Source*
-  Summary snippet. [Read ->](link)
-
-## [Keyword 2]
-- **[Headline]** - *Source*
-  Summary snippet. [Read ->](link)
-
-(... grouped by keyword. Omit keywords with no results, add inline note "No recent news found for [keyword]" if a keyword returned nothing.)
+<table_of_contents/>
 
 ---
 
-# Articles & Newsletters
+<callout icon="📰" color="blue_bg">
+	**Daily News Updates** — DD/MM/YY
+</callout>
 
-## Finance
-- **[Article Title]** - *Source/Author*
-  Summary.
+## [Keyword 1] {color="blue"}
+- **[Headline]** — <span color="gray">*Source*</span>
+  Summary snippet. [Read ->](link)
 
-## Web3 News
-- **[Article Title]** - *Source/Author*
-  Summary.
+## [Keyword 2] {color="blue"}
+- **[Headline]** — <span color="gray">*Source*</span>
+  Summary snippet. [Read ->](link)
 
-## AI News
-(...)
+(... grouped by keyword. Omit keywords with no results.)
 
-## Modern Philosophy
-(...)
+---
 
-## Other
-(...)
+<callout icon="📨" color="orange_bg">
+	**Articles & Newsletters**
+</callout>
+
+## 💰 Finance {toggle="true" color="green"}
+	- **[Article Title]** — <span color="gray">*Source/Author*</span>
+	  Summary.
+
+## 🌐 Web3 News {toggle="true" color="purple"}
+	- **[Article Title]** — <span color="gray">*Source/Author*</span>
+	  Summary.
+
+## 🤖 AI News {toggle="true" color="blue"}
+	- **[Article Title]** — <span color="gray">*Source/Author*</span>
+	  Summary.
+
+## 🧠 Modern Philosophy {toggle="true" color="brown"}
+	- **[Article Title]** — <span color="gray">*Source/Author*</span>
+	  Summary.
+
+## 📦 Other {toggle="true" color="gray"}
+	- **[Article Title]** — <span color="gray">*Source/Author*</span>
+	  Summary.
 
 (Empty categories are omitted entirely. Articles within each category listed newest first.)
 
 ---
 
-# YouTube Watchlist
+<callout icon="🎬" color="red_bg">
+	**YouTube Watchlist**
+</callout>
 
-## 1. [Video Title]
-**Channel:** Channel Name | **Duration:** 12:34
+<columns>
+	<column>
+		### 1. [Video Title]
+		<span color="gray">**Channel:** Channel Name | **Duration:** 12:34</span>
 
-**Main topic:** One sentence thesis.
+		**Main topic:** One sentence thesis.
 
-**Key points:**
-- Point 1
-- Point 2
-- Point 3
+		**Key points:**
+		- Point 1
+		- Point 2
+		- Point 3
 
-**Key takeaway:** One sentence.
+		> **Key takeaway:** One sentence. {color="purple_bg"}
 
-[Watch ->](youtube-link)
+		[Watch ->](youtube-link)
+	</column>
+	<column>
+		### 2. [Video Title]
+		(... same structure ...)
+	</column>
+</columns>
 
-## 2. [Video Title]
-(...)
-
-## 3. [Video Title]
-(...)
+### 3. [Video Title]
+(... same structure, full-width below the columns ...)
 ```
 
+### YouTube Layout Rules
+- **3 videos:** First two in `<columns>`, third full-width below
+- **2 videos:** Both in `<columns>`
+- **1 video:** Full-width, no `<columns>` wrapper
+
 ### Error Handling in Composition
-- If a section's fetch script failed, insert: `> [Section] skipped - [error reason]`
+- If a section's fetch script failed, insert a styled error callout:
+  ```markdown
+  <callout icon="⚠️" color="red_bg">
+  	**[Section] skipped** — [error reason]
+  </callout>
+  ```
 - If a section returned zero results, omit that section with an inline note
-- If ALL three sources failed, still create the page with error summaries
+- If ALL three sources failed, still create the page with error summaries using the callout format above
 
 ## Step 5: Publish to Notion
 
