@@ -20,6 +20,13 @@ news:
   articles_per_keyword: 3
   max_total_articles: 15
 
+analyser:
+  high_threshold: 8      # urgency+importance >= this → HIGH (detailed 5-8 bullet summary)
+  medium_threshold: 5    # urgency+importance >= this → MEDIUM (2-3 sentence summary), else LOW (headline only)
+  apply_to:
+    - gmail
+    - news              # youtube is always excluded
+
 notion:
   parent_page_id: "32aa13cdb21f80c7a5a3fc337a1f1c76"
   youtube_summaries_page_id: "331a13cdb21f8021a052c1e4dadd9ec3"
