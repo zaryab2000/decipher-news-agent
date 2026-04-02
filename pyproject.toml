@@ -9,6 +9,7 @@ dependencies = [
     "requests==2.32.3",
     "pyyaml==6.0.2",
     "gnews==0.4.3",
+    "youtube-transcript-api==1.2.4",
 ]
 
 [build-system]

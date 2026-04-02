@@ -136,7 +136,7 @@ Pair articles into rows of 2. If there's an odd number, the last article gets a 
 ---
 
 # 📨 Articles & Newsletters
-<span color="gray">Fetched from your inbox (last 24 hours)</span>
+<span color="gray">Fetched from your inbox (since last report)</span>
 ```
 
 Each category is a **colored callout banner** followed by articles listed below it (not inside the callout). Use these category colors:
@@ -172,6 +172,26 @@ Summary text......
 ```
 
 Empty categories are omitted entirely (both callout and articles). Articles within each category listed newest first. Use a `---` divider between categories.
+
+### Overflow Handling
+
+Read `gmail.max_full_articles` from `dna-config.yaml` (default: 15). If the total number of email articles exceeds this threshold:
+
+- The first `max_full_articles` emails get full treatment (categorized, summarized, displayed with callout banners as above)
+- The remaining emails appear in a compact overflow section after all category sections:
+
+```markdown
+---
+
+### 📋 Also in Your Inbox
+<span color="gray">Older newsletters (summarize individually if interested)</span>
+
+- **Subject line here** — *Sender* · Apr 1
+- **Subject line here** — *Sender* · Mar 30
+- ...
+```
+
+No summaries, no categorization for overflow items — just subject, sender, and date. This ensures nothing is silently dropped while keeping context usage manageable.
 
 ### YouTube Watchlist Summary
 
@@ -245,7 +265,8 @@ After successful publication, update `dna-state.json`:
    {"video_id": "xxx", "processed_at": "2026-03-21T09:00:00+04:00"}
    ```
 3. Prune entries older than 30 days
-4. Write the updated state file
+4. Set `gmail_last_run` to the current GST timestamp
+5. Write the updated state file
 
 ```bash
 # Use python to update the state file
@@ -271,6 +292,7 @@ state['processed_videos'] = [
     if v['processed_at'] > cutoff
 ]
 state['last_run'] = now
+state['gmail_last_run'] = now
 
 with open('dna-state.json', 'w') as f:
     json.dump(state, f, indent=2)
