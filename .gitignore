@@ -6,4 +6,5 @@ dna-state.json
 *.egg-info/
 .claude/tokens/
 dna-config.yaml
+.mcp.json
 docs-internal/
