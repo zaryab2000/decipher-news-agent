@@ -4,7 +4,7 @@ description: "Summarize a YouTube video and publish to Notion. Usage: /summarize
 
 # /summarize — YouTube Video Summarizer
 
-Summarize a YouTube video using the `summarize` CLI and publish the result as a Notion sub-page.
+Summarize a YouTube video and publish the result as a Notion sub-page. Transcript extraction uses `youtube-transcript-api` (free, no API key). Summarization is done by Claude directly (no external LLM).
 
 ## Step 1: Parse Input & Load Config
 
@@ -184,32 +184,123 @@ json.dump({
 
 Replace `YOUTUBE_URL` with the user's input URL.
 
-## Step 3: Run Summarize CLI
+## Step 3: Extract Transcript
 
-Using the video URL from Step 2, run the `summarize` CLI:
+Using the video ID from Step 2, extract the transcript via `youtube-transcript-api`:
 
 ```bash
-summarize "VIDEO_URL" --length long --youtube auto --model google/gemini-2.5-flash
+uv run python3 -c "
+import sys
+from youtube_transcript_api import YouTubeTranscriptApi
+
+video_id = sys.argv[1]
+try:
+    api = YouTubeTranscriptApi()
+    transcript = api.fetch(video_id, languages=['en'])
+except Exception as e:
+    print(f'Transcript fetch failed: {e}', file=sys.stderr)
+    sys.exit(1)
+
+full_text = ' '.join(entry.text for entry in transcript)
+print(full_text)
+" "VIDEO_ID"
 ```
 
-Replace `VIDEO_URL` with the actual YouTube URL.
+Replace `VIDEO_ID` with the actual video ID. Use a timeout of 30000ms.
 
-Use a timeout of 300000ms (5 minutes) since long videos take time to process.
+Capture the stdout as the raw transcript text.
 
-Capture the full stdout output — this is the markdown summary.
+### Fallback: yt-dlp
 
-### Error Handling
+If `youtube-transcript-api` fails (exits non-zero), fall back to `yt-dlp`:
 
-- If `summarize` is not found (command not found error), print:
-  `"Error: 'summarize' CLI not found. Install with: npm i -g @steipete/summarize"`
-  and stop.
-- If `summarize` exits with a non-zero code, print the stderr output. Then retry once with an explicit model fallback:
-  ```bash
-  summarize "VIDEO_URL" --length long --youtube auto --model openrouter/google/gemini-2.0-flash-exp:free
-  ```
-  If the retry also fails, stop. Do NOT create a Notion page for a failed summarization.
+```bash
+yt-dlp --write-auto-sub --sub-lang en --skip-download --write-sub \
+  -o "/tmp/dna-%(id)s" "VIDEO_URL" 2>/dev/null
+```
 
-## Step 4: Publish to Notion
+Then strip timestamps from the resulting subtitle file:
+
+```bash
+uv run python3 -c "
+import sys, re, os
+
+video_id = sys.argv[1]
+vtt_path = f'/tmp/dna-{video_id}.en.vtt'
+srt_path = f'/tmp/dna-{video_id}.en.srt'
+
+path = vtt_path if os.path.exists(vtt_path) else srt_path
+if not os.path.exists(path):
+    print('Error: No subtitle file found.', file=sys.stderr)
+    sys.exit(1)
+
+with open(path) as f:
+    content = f.read()
+
+lines = []
+for line in content.splitlines():
+    if re.match(r'^\d{2}:\d{2}', line):
+        continue
+    if re.match(r'^\d+$', line.strip()):
+        continue
+    if line.startswith('WEBVTT') or line.startswith('Kind:') or line.startswith('Language:'):
+        continue
+    cleaned = re.sub(r'<[^>]+>', '', line).strip()
+    if cleaned:
+        lines.append(cleaned)
+
+deduped = []
+for line in lines:
+    if not deduped or line != deduped[-1]:
+        deduped.append(line)
+
+print(' '.join(deduped))
+" "VIDEO_ID"
+```
+
+### Both methods fail
+
+If both `youtube-transcript-api` and `yt-dlp` fail to produce a transcript, print:
+```
+Error: Could not extract transcript for this video. The video may not have captions available.
+```
+Stop execution. Do NOT create a Notion page without a transcript.
+
+### Long videos (3+ hours)
+
+If the transcript output exceeds 30,000 characters, write it to `/tmp/dna-transcript-VIDEO_ID.txt` first, then read it with the Read tool.
+
+## Step 4: Summarize Transcript
+
+You now have the full transcript from Step 3. Produce a structured summary in markdown following this exact structure:
+
+### Overview
+A single paragraph (3-5 sentences) capturing the video's main thesis, who it's for, and why it matters.
+
+### Key Points
+- **[Point title]**: Explanation in 1-2 sentences.
+
+Include 5-8 key points, ordered by importance, not chronologically.
+
+### Notable Quotes
+> "Exact quote from the transcript"
+> — Speaker (if identifiable) or "Host"
+
+Include 2-4 of the most impactful or memorable quotes. Only use EXACT words from the transcript — do not paraphrase. If unsure of exact wording, omit the quote.
+
+### Takeaways
+1. Actionable takeaway
+
+Include 3-5 concrete, actionable takeaways the viewer should remember.
+
+### Quality Guidelines
+- Do NOT start with "This video explores..." or "In this video..." — lead with the insight itself
+- Be specific: use names, numbers, and concrete examples from the transcript
+- If the video has a clear argument or thesis, state it directly in the overview
+- Key points should be substantive insights, not vague topic headers
+- Takeaways should be things the viewer can act on, not restatements of what was discussed
+
+## Step 5: Publish to Notion
 
 Compute today's date in GST (GMT+4) in DD/MM/YY format.
 
@@ -226,23 +317,38 @@ Use `mcp__claude_ai_Notion__notion-create-pages` to create a sub-page:
 > **Channel:** [Channel Name]
 > **Duration:** [Duration]
 > **Link:** [YouTube URL]
-> **Summarized on:** [DD/MM/YY]
+> **Summarized on:** [DD/MM/YY in GST]
 
 ---
 
-[Full summary output from the summarize CLI, preserved exactly as-is.
-Do not reformat, truncate, or modify the summary in any way.]
+## Overview
+[Overview paragraph from Step 4]
+
+## Key Points
+[Key points from Step 4]
+
+## Notable Quotes
+[Quotes from Step 4]
+
+## Takeaways
+[Takeaways from Step 4]
 ```
 
 If Notion publishing fails, report the error clearly and stop.
 
-## Step 5: Confirm
+## Step 6: Confirm & Cleanup
 
 Print the Notion page URL and a confirmation message.
+
+Clean up any temp files:
+```bash
+rm -f /tmp/dna-VIDEO_ID.en.vtt /tmp/dna-VIDEO_ID.en.srt /tmp/dna-transcript-VIDEO_ID.txt
+```
 
 ## Important Notes
 
 - All dates use GST (GMT+4, Asia/Dubai)
-- The `summarize` CLI auto-detects LLM provider from environment variables (`OPENROUTER_API_KEY`, `GEMINI_API_KEY`)
+- Transcript extraction failure is fatal — do not create a Notion page without a transcript
+- Claude (the agent running this command) performs the summarization directly — no external LLM API needed
+- For videos without captions, neither extraction method will work — inform the user and stop
 - Notion failure is fatal — do not retry
-- `summarize` failure is fatal — do not create a partial Notion page

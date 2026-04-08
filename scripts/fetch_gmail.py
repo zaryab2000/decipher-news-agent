@@ -93,20 +93,54 @@ def extract_body(payload: dict) -> tuple[str, str]:
     return text_body, html_body
 
 
+def load_state(config: dict) -> dict:
+    """Load dna-state.json, returning empty dict if missing or invalid."""
+    state_file = config.get("youtube", {}).get("state_file", "dna-state.json")
+    state_path = os.path.join(os.path.dirname(__file__), "..", state_file)
+    try:
+        with open(state_path) as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+
+def build_gmail_query(label: str, state: dict, lookback_hours: int) -> str:
+    """Build Gmail search query using last run timestamp or lookback fallback.
+
+    Args:
+        label: Gmail label to filter by.
+        state: Parsed dna-state.json contents.
+        lookback_hours: Fallback lookback window for first run.
+
+    Returns:
+        Gmail search query string.
+    """
+    now = datetime.now(GST)
+    gmail_last_run = state.get("gmail_last_run")
+
+    if gmail_last_run:
+        last_run_dt = datetime.fromisoformat(gmail_last_run)
+        after_epoch = int(last_run_dt.timestamp())
+        after_filter = f"after:{after_epoch}"
+    else:
+        after_date = (now - timedelta(hours=lookback_hours)).strftime("%Y/%m/%d")
+        after_filter = f"after:{after_date}"
+
+    before_date = (now + timedelta(days=1)).strftime("%Y/%m/%d")
+    return f"label:{label} {after_filter} before:{before_date}"
+
+
 def main() -> None:
     config = load_config()
     gmail_config = config["gmail"]
     label = gmail_config["label"]
     lookback = gmail_config["lookback_hours"]
 
-    now = datetime.now(GST)
-    after_date = (now - timedelta(hours=lookback)).strftime("%Y/%m/%d")
-    before_date = (now + timedelta(days=1)).strftime("%Y/%m/%d")
-
+    state = load_state(config)
     access_token = refresh_access_token()
     headers = {"Authorization": f"Bearer {access_token}"}
 
-    query = f"label:{label} after:{after_date} before:{before_date} is:unread"
+    query = build_gmail_query(label, state, lookback)
 
     resp = requests.get(
         f"{GMAIL_API}/messages",
