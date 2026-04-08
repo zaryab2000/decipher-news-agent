@@ -3,6 +3,7 @@ timezone: "Asia/Dubai"  # GMT+4
 gmail:
   label: "dna-queue"
   lookback_hours: 24
+  max_full_articles: 15
 
 youtube:
   playlist_id: "PLsUtsbCOwLIP00R90YxcBnCDOqFLrhasg"
