@@ -20,6 +20,7 @@ Personal AI agent that generates a daily newspaper by aggregating email newslett
 | `.claude/commands/add-news-topic.md` | Add news keywords to config |
 | `.claude/commands/remove-news-topic.md` | Remove news keywords from config |
 | `.claude/commands/list-topics.md` | Show current news keywords |
+| `.claude/commands/learn.md` | YouTube tutorial deep-learner slash command |
 | `scripts/fetch_news.py` | Google News RSS fetcher (via `gnews` library) |
 | `scripts/fetch_gmail.py` | Gmail newsletter fetcher (OAuth, state-aware) |
 | `scripts/fetch_youtube.py` | YouTube playlist fetcher (OAuth, ID-based dedup) |
@@ -36,6 +37,7 @@ Personal AI agent that generates a daily newspaper by aggregating email newslett
 /summarize <youtube-url>  # Summarize a specific video
 /add-news-topic AI agents # Add a news keyword
 /list-topics              # Show tracked keywords
+/learn <youtube-url>  # Deep-learn a YouTube tutorial → saves tutorials/tutorial_<name>.md
 ```
 
 ## Config
@@ -57,6 +59,13 @@ Personal AI agent that generates a daily newspaper by aggregating email newslett
 2. Extracts transcript via `youtube-transcript-api` (fallback: `yt-dlp`)
 3. Claude produces structured summary (Overview, Key Points, Notable Quotes, Takeaways)
 4. Publishes to Notion under YouTube Summaries page
+
+### /learn
+1. Accepts a YouTube URL, rejects non-URL input
+2. Fetches video metadata via YouTube Data API v3
+3. Extracts full transcript via `youtube-transcript-api` (fallback: `yt-dlp`)
+4. Claude produces a deep, structured tutorial document (Overview, Prerequisites, Core Concepts, Step-by-Step, Key Insights, Replication Checklist, Resources)
+5. Saves to `tutorials/tutorial_<slug>.md` locally (not published to Notion)
 
 ## Error Handling
 
