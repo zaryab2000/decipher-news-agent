@@ -8,6 +8,7 @@ Outputs JSON to stdout:
 
 import json
 import sys
+from datetime import datetime
 
 import yaml
 from gnews import GNews
@@ -32,6 +33,30 @@ def is_low_quality(url: str) -> bool:
         if domain in url:
             return True
     return False
+
+
+def parse_published_at(value) -> datetime:
+    """Normalize a GNews published date to a datetime for sorting.
+
+    GNews may return a datetime object or an RSS date string. Strings that
+    cannot be parsed fall back to datetime.min so they sort at the end.
+    """
+    if isinstance(value, datetime):
+        return value
+    if isinstance(value, str) and value:
+        formats = [
+            "%a, %d %b %Y %H:%M:%S %Z",
+            "%a, %d %b %Y %H:%M:%S %z",
+            "%Y-%m-%d %H:%M:%S",
+            "%Y-%m-%dT%H:%M:%S",
+            "%Y-%m-%dT%H:%M:%SZ",
+        ]
+        for fmt in formats:
+            try:
+                return datetime.strptime(value, fmt)
+            except ValueError:
+                continue
+    return datetime.min
 
 
 def fetch_keyword(client: GNews, keyword: str, per_keyword: int) -> list[dict]:
@@ -91,6 +116,9 @@ def main() -> None:
                 seen_urls[url] = len(all_articles)
                 all_articles.append(article)
 
+    # Sort by recency so the highest-priority (newest) articles appear first,
+    # regardless of which keyword produced them.
+    all_articles.sort(key=lambda a: parse_published_at(a.get("published_at")), reverse=True)
     all_articles = all_articles[:max_total]
     json.dump({"articles": all_articles}, sys.stdout, indent=2)
     print()
